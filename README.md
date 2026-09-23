@@ -1,4 +1,9 @@
-# Serverless CI/CD Automation Pipeline
+﻿# Serverless CI/CD Automation Pipeline
+
+<div align="center">
+  <img src="assets/architecture.png" alt="Enterprise CI/CD GitOps Pipeline Architecture" width="100%">
+</div>
+
 
 This project implements an enterprise-grade Continuous Integration and Continuous Deployment pipeline for an event-driven, serverless e-commerce backend on Amazon Web Services. The primary focus of this repository is to demonstrate automated GitOps workflows, infrastructure security scanning, and zero-touch deployments.
 
@@ -43,3 +48,4 @@ The pipeline relies on Terraform to maintain a strict state of the AWS environme
 To operate this pipeline, the following secrets must be configured in the GitHub repository environment:
 * AWS Access Key ID
 * AWS Secret Access Key
+
