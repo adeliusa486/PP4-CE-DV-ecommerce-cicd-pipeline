@@ -69,6 +69,7 @@ jobs:
         working-directory: ./terraform/environments/dev
         
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -var="alert_email=adeelahmada486@gmail.com"
         working-directory: ./terraform/environments/dev
+
 
