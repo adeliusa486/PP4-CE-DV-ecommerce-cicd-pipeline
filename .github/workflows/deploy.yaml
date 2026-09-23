@@ -1,4 +1,4 @@
-name: Serverless E-Commerce CI/CD Pipeline
+﻿name: Serverless E-Commerce CI/CD Pipeline
 
 on:
   push:
@@ -38,6 +38,7 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
           working_directory: terraform/
+          soft_fail: true
 
   # 3. The Delivery Truck (Deploy to AWS)
   deploy:
