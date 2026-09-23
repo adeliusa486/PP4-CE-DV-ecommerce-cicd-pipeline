@@ -1,0 +1,72 @@
+name: Serverless E-Commerce CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # 1. The Code Inspector (Crash Test)
+  test:
+    name: Run Python Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: pip install pytest
+        
+      - name: Run Pytest
+        run: pytest services/order-service/tests/ -v
+
+  # 2. The Security Guard (X-Ray Scanner)
+  security-scan:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: terraform/
+
+  # 3. The Delivery Truck (Deploy to AWS)
+  deploy:
+    name: Terraform Deploy
+    runs-on: ubuntu-latest
+    needs: security-scan
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-1"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        
+      - name: Package Microservices (Create ZIPs)
+        run: |
+          cd services
+          zip -j order-service/order-service.zip order-service/*.py
+          zip -j payment-service/payment-service.zip payment-service/*.py
+          zip -j inventory-service/inventory-service.zip inventory-service/*.py
+          zip -j notification-service/notification-service.zip notification-service/*.py
+          
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform/environments/dev
+        
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./terraform/environments/dev
