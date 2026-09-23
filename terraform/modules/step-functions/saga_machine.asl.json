@@ -1,0 +1,77 @@
+{
+  "Comment": "SAGA Orchestrator for E-Commerce",
+  "StartAt": "ProcessPayment",
+  "States": {
+    
+    "ProcessPayment": {
+      "Type": "Task",
+      "Resource": "${PaymentLambdaArn}",
+      "Next": "CheckPaymentSuccess",
+      "ResultPath": "$.paymentResult",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "CancelOrder"
+        }
+      ]
+    },
+
+    "CheckPaymentSuccess": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.paymentResult.status",
+          "StringEquals": "success",
+          "Next": "CheckInventory"
+        }
+      ],
+      "Default": "CancelOrder"
+    },
+
+    "CheckInventory": {
+      "Type": "Task",
+      "Resource": "${InventoryLambdaArn}",
+      "Next": "CheckInventorySuccess",
+      "ResultPath": "$.inventoryResult",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "CancelOrder"
+        }
+      ]
+    },
+
+    "CheckInventorySuccess": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.inventoryResult.status",
+          "StringEquals": "success",
+          "Next": "ConfirmOrder"
+        }
+      ],
+      "Default": "CancelOrder"
+    },
+
+    "ConfirmOrder": {
+      "Type": "Task",
+      "Resource": "${NotificationLambdaArn}",
+      "End": true,
+      "Parameters": {
+        "detail-type": "OrderConfirmed",
+        "detail.$": "$.detail"
+      }
+    },
+
+    "CancelOrder": {
+      "Type": "Task",
+      "Resource": "${NotificationLambdaArn}",
+      "End": true,
+      "Parameters": {
+        "detail-type": "OrderCancelled",
+        "detail.$": "$.detail"
+      }
+    }
+
+  }
+}

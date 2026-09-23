@@ -1,0 +1,15 @@
+﻿# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+.terraform.lock.hcl
+
+# Python
+__pycache__/
+*.zip
+.pytest_cache/
+
+# OS
+.DS_Store
